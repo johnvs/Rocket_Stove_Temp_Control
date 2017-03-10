@@ -1,0 +1,27 @@
+{
+  "name": "rocket-stove-electron-serialport",
+  "version": "1.0.0",
+  "description": "Interface for the rocket stove temp controller",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "install": "electron-rebuild"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "Electron",
+    "serialport"
+  ],
+  "author": "john van strien",
+  "license": "",
+  "devDependencies": {
+    "electron": "^1.4.1",
+    "electron-rebuild": "^1.4.0"
+  },
+  "dependencies": {
+    "serialport": "^4.0.7"
+  }
+}
