@@ -2,22 +2,149 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Hello World!</title>
+    <title>Rocket Stove Temperature Control</title>
+    <!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" /> -->
+    <link rel="stylesheet" href="node_modules/jquery-ui/themes/base/all.css" />
+    <link rel="stylesheet" href="main.css" type="text/css">
+    <!-- <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+	  <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script> -->
   </head>
   <body>
-    <h1>Hello World!</h1>
-    <!-- All of the Node.js APIs are available in this renderer process. -->
-    We are using Node.js <script>document.write(process.versions.node)</script>,
-    Chromium <script>document.write(process.versions.chrome)</script>,
-    Electron <script>document.write(process.versions.electron)</script>,
-    and Serialport <script>document.write(require('serialport/package').version)</script>.
+    <main id='mainUI'>
+      <section id='damperUI' class='uiPanel'>
+        <h2>Damper</h2>
+        <div id='potTempActualGrp'>
+          <p class='damperColumn1'>Temperature - Actual (F)</p>
+          <p id='potTempActual' class='damperColumn2'>temp</p>
+        </div>
+        <div id='potTempDesiredGrp'>
+          <div id='potTempDesiredInner'>
+            <p class='damperColumn1'>Temperature - Desired (F)</p>
+            <input type='number' id='potTempDesired' class='damperColumn2 numberInput'>
+          </div>
+    	    <div id="potTempSlider" class='damperColumn1 indent sliders'></div>
+        </div>
+        <div id='damperAngleActualGrp'>
+          <p class='damperColumn1'>Damper Angle (% Open)</p>
+          <p id='damperAngleActual' class='damperColumn2'>angle</p>
+        </div>
 
-    <div id="error"></div>
-    <div id="ports"></div>
+        <div id='damperControlMode'>
+          <h3 class='damperColumn1'>Control Mode</h3>
+          <div id='damperCntlModeRadBtns'>
+            <div id='damperCntlModeManual'>
+              <label for="damperManualCntl" class='damperColumn1 indent'>Manual</label>
+              <div class='radioButton damperColumn2'>
+                <input type="radio" name="damperCntlModeRadBtn" id="damperManualCntl" required value="1" /><br />
+              </div>
+            </div>
+            <div id='damperCntlModeAuto'>
+              <label for="damperAutoCntl" class='damperColumn1 indent'>Automatic</label>
+              <div class='radioButton damperColumn2'>
+                <input type="radio" name="damperCntlModeRadBtn" id="damperAutoCntl" value="2" /><br />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id='damperManualCntl'>
+          <h3 class='damperColumn1'>Manual Control</h3>
+          <div id='damperSetAngle'>
+            <p class='damperColumn1 indent'>Set Angle (Degrees)</p>
+            <input type='number' id='damperAngleManual' class='damperColumn2 numberInput'>
+          </div>
+    	    <div id="damperAngleSlider" class='damperColumn1 indent sliders'></div>
+          <div id='homeMotorCntl'>
+            <p class='damperColumn1 indent'>Home Motor</p>
+            <button name="homeMotorBtn" id="homeMotorBtn" class='damperColumn2'></button>
+          </div>
+        </div>
+
+        <div id='damperStatus'>
+          <h3 class='damperColumn1'>Status</h3>
+          <div id='motorHomed'>
+            <p class='damperColumn1 indent'>Motor is Homed</p>
+            <p id='damperMotorIsHomed' class='damperColumn2'>No</p>
+          </div>
+          <div id='motorPosition'>
+            <p class='damperColumn1 indent'>Motor Position</p>
+            <p id='damperMotorPos' class='damperColumn2'>0</p>
+          </div>
+          <div id='thermocoupleFaults'>
+            <p class='damperColumn1 indent'>Thermocouple Fault</p>
+            <p id='potTCFaults' class='damperColumn2'>None</p>
+          </div>
+        </div>
+      </section>
+
+      <section id='blowerUI' class='uiPanel'>
+        <h2>Blower</h2>
+        <div id='flueActualGrp'>
+          <div id='flueTempGrp'>
+            <p class='blowerColumn1'>Flue Temperature (F)</p>
+            <p id='flueTempActual' class='blowerColumn2'>temp</p>
+          </div>
+          <div id='blowerSpeedDesiredGrp'>
+            <p class='blowerColumn1'>Desired Speed (%)</p>
+            <p id='blowerSpeedDesired' class='blowerColumn2'>speed</p>
+          </div>
+          <div id='blowerSpeedActualGrp'>
+            <p class='blowerColumn1'>Actual Speed (RPM)</p>
+            <p id='blowerSpeedActual' class='blowerColumn2'>speed</p>
+          </div>
+        </div>
+
+        <div id='blowerControlMode'>
+          <h3 class='blowerColumn1'>Control Mode</h3>
+          <div id='blowerCntlModeRadBtns'>
+            <div id='blowerCntlModeManual'>
+              <label for="blowerManualCntl" class='blowerColumn1 indent'>Manual</label>
+              <div class='radioButton blowerColumn2'>
+                <input type="radio" name="blowerCntlModeRadBtn" id="blowerManualCntl" required value="1" /><br />
+              </div>
+            </div>
+            <div id='blowerCntlModeAuto'>
+              <label for="blowerAutoCntl" class='blowerColumn1 indent'>Automatic</label>
+              <div class='radioButton blowerColumn2'>
+                <input type="radio" name="blowerCntlModeRadBtn" id="blowerAutoCntl" value="2" /><br />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id='blowerManualCntl'>
+          <h3 class='blowerColumn1'>Manual Control</h3>
+          <div id='blowerSetSpeed'>
+            <p class='blowerColumn1 indent'>Set Speed (%)</p>
+            <input type='number' id='blowerSpeedManual' class='blowerColumn2 numberInput'>
+          </div>
+    	    <div id="blowerSpeedSlider" class='blowerColumn1 indent sliders'></div>
+        </div>
+
+        <div id='blowerStatus'>
+          <h3 class='blowerColumn1'>Status</h3>
+          <div id='algoCmdSpeed'>
+            <p class='blowerColumn1 indent'>Control System Command Speed</p>
+            <p id='blowerCommandSpeed' class='blowerColumn2'>speed</p>
+          </div>
+          <div id='flueTCFaultGrp'>
+            <p class='blowerColumn1 indent'>Thermocouple Fault</p>
+            <p id='flueTCFault' class='blowerColumn2'>None</p>
+          </div>
+        </div>
+
+      </section>
+    </main>
+    <section id='globalUI'>
+      <h3 class='globalUIColumn1'>Global Controls</h3>
+      <div id='dataUpdateRate'>
+        <p class='globalUIColumn1 indent'>Set Data Update Rate (sec)</p>
+        <input type='number' id='dataUpdateRateInput' class='globalUIColumn2 numberInput'>
+      </div>
+      <div id='controllerIsConnected'>
+        <p class='globalUIColumn1 indent'>The stove controller is NOT connected.</p>
+      </div>
+    </section>
+    <script src='renderer.js'></script>
   </body>
-
-  <script>
-    // You can also require other files to run in this process
-    require('./renderer.js')
-  </script>
 </html>
