@@ -1,3 +1,5 @@
+"use strict";
+
 const electron = require('electron');
 // Module to control application life.
 const app = electron.app;
@@ -6,6 +8,8 @@ const BrowserWindow = electron.BrowserWindow;
 
 const path = require('path');
 const url = require('url');
+
+window.$ = window.jQuery = require('jquery');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -25,7 +29,10 @@ function createWindow () {
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 
-  // Emitted when the window is closed.
+  mainWindow.on('ready-to-show', function () {
+    initUI();
+  });
+
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
