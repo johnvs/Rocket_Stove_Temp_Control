@@ -1,35 +1,21 @@
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
-// All of the Node.js APIs are available in this process.
+"use strict";
 
-const serialport = require('serialport');
+window.$ = window.jQuery = require('jquery');
+const widget = require('jquery-ui/ui/widget');
+//const keycode =
+const button = require('jquery-ui/ui/widgets/button');
+const mouse = require('jquery-ui/ui/widgets/mouse');
+const slider = require('jquery-ui/ui/widgets/slider');
+require('jquery-ui/ui/keycode');
 
-serialport.list((err, ports) => {
-  console.log('ports', ports);
-  if (err) {
-    document.getElementById('error').textContent = err.message;
-    return;
-  } else {
-    document.getElementById('error').textContent = '';
-  }
+const stoveController = require('./stove-controller');
+stoveController.init();
 
-  if (ports.length === 0) {
-    document.getElementById('error').textContent = 'No ports discovered';
-  }
-
-  const headers = Object.keys(ports[0]);
-  const table = createTable(headers);
-  tableHTML = '';
-  table.on('data', data => tableHTML += data);
-  table.on('end', () => document.getElementById('ports').innerHTML = tableHTML);
-  ports.forEach(port => table.write(port));
-  table.end();
-});
-
-
-
+// console.log("jqueryUiButton = " + button);
+// console.log("jqueryUiSlider = " + slider);
 
 function handleDataEvent(name, value) {
+
   const tcFaults = {
     0 : "No faults",
     1 : "No connection",
@@ -154,56 +140,36 @@ function handleDataEvent(name, value) {
 
 }
 
-function initSocketIO() {
-	// iosocket = io.connect();
-	// iosocket = io('ws://localhost:1337', {transports: ['websocket']});
-	// iosocket = io('http://127.0.0.1:1337');
-	// iosocket = io('http://localhost:1337');
-	// iosocket.on('onconnection', function(value) {
-  //   console.log("SocketIO onconnection event");
-  // });
 
-	// Process data received from rocket stove controller
-	iosocket.on('update', function (receivedData) {
-    // Modify the UI with new data
-    for (let datalette in receivedData) {
-      console.log("  receivedData." + datalette + " = " + receivedData[datalette]);
-      // console.log("  receivedData." + datalette + " = " + receivedData[datalette]);
+// Process data received from rocket stove controller
+stoveController.on('update', function (receivedData) {
+  // Modify the UI with new data
+  for (let item in receivedData) {
+    // console.log("  receivedData." + item + " = " + receivedData[item]);
+    // console.log("  receivedData." + item + " = " + receivedData[item]);
 
-      // Call the <datalette> event handler with the received data
-      handleDataEvent(datalette, receivedData[datalette]);
-    }
-	});
+    // Call the <item> event handler with the received data
+    handleDataEvent(item, receivedData[item]);
+  }
+});
 
-	// Process message from server
-	iosocket.on('controllerConnected', function (value) {
-      // isControllerConnected = value;
+// Process message from server
+stoveController.on('controllerConnected', function (value) {
+    const result = value ? "" : "NOT ";
+    console.log("Stove controller is " + result + "connected.");
+    $('#controllerIsConnected p').text(`The stove controller is ${result} connected.`);
+});
 
-      const result = value ? "" : "NOT ";
-      console.log("Stove controller is " + result + "connected.");
-
-      $('#controllerIsConnected p').text(`The stove controller is ${result} connected.`);
-	});
-
-	// Process warning from server
-	// iosocket.on('warning', function (warningMsg) {
-    // Process warning message
-	// });
-
-	// iosocket.on('disconnect', function (receivedData) {
-  //   console.log("SocketIO disconnect event");
-  //
-  //   // Modify UI to indicate that the server and stove controller are disconnected
-  //   $('#controllerIsConnected p').text("The server and stove controller are NOT connected.");
-  // });
-}
+initUI();
 
 function initUI() {
+
+  console.log("initUI");
 
   // Init Home Motor button
   $( "#homeMotorBtn" ).button();
   $( '#homeMotorBtn' ).on( "click", function(event) {
-    iosocket.emit('homeMotorBtnClicked');
+    stoveController.emit('homeMotorBtnClicked');
   });
 
   // Initialize the values of the text inputs
@@ -225,8 +191,8 @@ function initUI() {
     max : 212,
     value : 0,
     change: function(event, ui) {
-        console.log("potTempSlider change event");
-        iosocket.emit('potTempDesiredChanged', ui.value);
+        console.log("potTempSlider change event: value = " + ui.value);
+        stoveController.emit("potTempDesiredChanged", ui.value);
         $( "#potTempDesired" ).val(ui.value);
     }
   });
@@ -243,8 +209,8 @@ function initUI() {
     max : 90,
     value : 0,
     change: function(event, ui) {
-        console.log("damperAngleSlider change event");
-        iosocket.emit('damperAngleChanged', ui.value);
+        console.log("damperAngleSlider change event: value = " + ui.value);
+        stoveController.emit("damperAngleChanged", ui.value);
         $( "#damperAngleManual" ).val(ui.value);
       }
   });
@@ -261,8 +227,8 @@ function initUI() {
     max : 100,
     value : 0,
     change: function(event, ui) {
-      console.log("blowerSpeedSlider change event");
-      iosocket.emit('blowerSpeedChanged', ui.value);
+      console.log("blowerSpeedSlider change event: value = " + ui.value);
+      stoveController.emit('blowerSpeedChanged', ui.value);
       $( "#blowerSpeedManual" ).val(ui.value);
     }
   });
@@ -271,6 +237,6 @@ function initUI() {
   $( "#dataUpdateRateInput" ).change(function(event) {
       const value = Math.floor( $("#dataUpdateRateInput").val() );
       console.log("dataUpdateRateInput change event: value = " + value);
-     iosocket.emit('dataUpdateRateChanged', value);
+      stoveController.emit('dataUpdateRateChanged', value);
   });
 }
