@@ -9,15 +9,14 @@ const BrowserWindow = electron.BrowserWindow;
 const path = require('path');
 const url = require('url');
 
-window.$ = window.jQuery = require('jquery');
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
 function createWindow () {
+  console.log("createWindow");
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 1200, height: 600});
+  mainWindow = new BrowserWindow({width: 1200, height: 1000});
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
@@ -30,10 +29,11 @@ function createWindow () {
   mainWindow.webContents.openDevTools();
 
   mainWindow.on('ready-to-show', function () {
-    initUI();
+    console.log("mainWindow ready-to-show");
   });
 
   mainWindow.on('closed', function () {
+    console.log("mainWindow closed");
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
@@ -48,6 +48,7 @@ app.on('ready', createWindow);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
+  console.log("app window-all-closed");
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   app.quit();
