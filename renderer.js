@@ -1,18 +1,16 @@
 "use strict";
 
 window.$ = window.jQuery = require('jquery');
-const widget = require('jquery-ui/ui/widget');
-//const keycode =
-const button = require('jquery-ui/ui/widgets/button');
-const mouse = require('jquery-ui/ui/widgets/mouse');
-const slider = require('jquery-ui/ui/widgets/slider');
+require('jquery-ui/ui/widget');
+require('jquery-ui/ui/widgets/button');
+require('jquery-ui/ui/widgets/mouse');
+require('jquery-ui/ui/widgets/slider');
 require('jquery-ui/ui/keycode');
 
 const stoveController = require('./stove-controller');
-stoveController.init();
+const fileSys = require('./file-sys');
 
-// console.log("jqueryUiButton = " + button);
-// console.log("jqueryUiSlider = " + slider);
+//let saveDataToFile = false;
 
 function handleDataEvent(name, value) {
 
@@ -66,9 +64,9 @@ function handleDataEvent(name, value) {
     d : function(data) {
           // d  Damper Control Mode (0 = Manual, 1 = Auto)
           if (data === 0) {
-            $( "#damperManualCntl" ).prop( "checked", true);
+            // $( "#damperManualCntl" ).prop("checked", true);
           } else if (data === 1) {
-            $( "#damperAutoCntl" ).prop( "checked", true);
+            // $( "#damperAutoCntl" ).prop("checked", true);
           }
         },
     e : function(data) {
@@ -116,9 +114,9 @@ function handleDataEvent(name, value) {
     j : function(data) {
           // j  Blower Control Mode (0 = Manual, 1 = Auto)
           if (data === 0) {
-            $( "#blowerManualCntl" ).prop( "checked", true);
+            // $( "#blowerManualCntl" ).prop( "checked", true);
           } else if (data === 1) {
-            $( "#blowerAutoCntl" ).prop( "checked", true);
+            // $( "#blowerAutoCntl" ).prop( "checked", true);
           }
         },
     k : function(data) {
@@ -140,12 +138,21 @@ function handleDataEvent(name, value) {
 
 }
 
-
 // Process data received from rocket stove controller
 stoveController.on('update', function (receivedData) {
+
+  // Vanilla JS version
+  // const checkbox = document.querySelector('#saveDataChkbox');
+  // if (checkbox.checked) {}
+  if ($('#saveDataChkbox').is(":checked")) {
+    // Write data to file
+    const dataRecord = generateDataRecord(receivedData);
+    fileSys.writeData(dataRecord);  // typeof dataRecord = "string"
+  }
+
   // Modify the UI with new data
   for (let item in receivedData) {
-    // console.log("  receivedData." + item + " = " + receivedData[item]);
+    // Update the corresponding UI element for each data item
     // console.log("  receivedData." + item + " = " + receivedData[item]);
 
     // Call the <item> event handler with the received data
@@ -160,9 +167,43 @@ stoveController.on('controllerConnected', function (value) {
     $('#controllerIsConnected p').text(`The stove controller is ${result} connected.`);
 });
 
-initUI();
+function generateDataRecord(data) {
+  // Data to write to file:         Source   Key
+  // 	Pot Temp, Actual              SC       b
+  // 	Pot Temp, Desired             UI
+  // 	Damper Angle                  SC       c
+  // 	Damper control mode           UI
+  //
+  // 	Flue Temp                     SC       h
+  // 	Blower speed, Desired (%)     UI
+  // 	Blower speed, Actual (RPM)    SC       i
+  // 	Blower control mode           UI
+  //
+  // Input:
+  //   {"a":0, "b":63.95, "c":-1, "d":0, "e":0, "f":255, "g":0, "h":63.95, "i":-1, "j":0, "k":-1}
+  //
+  // Output:
+  //   "Pot Temp Actual","Pot Temp Desired","Damper Angle","Damper control mode","Flue Temp","Blower Speed Desired","Blower speed Actual","Blower control mode"
+  //   "63.95,90.0,45.5,1,1200.0,75.0,875.0,0"
 
-function initUI() {
+  const currentTime = new Date();
+
+  const theGoodStuff = currentTime.toString() + "," +
+                       data.b.toString() + "," +
+                       $( "#potTempDesired" ).val().toString() + "," +
+                       data.c.toString() + "," +
+                       $("input[name=damperCntlModeRadBtn]:checked").val().toString() + "," +
+                       data.h.toString() + "," +
+                       $( "#blowerSpeedManual" ).val().toString() + "," +
+                       data.i.toString() + "," +
+                       $("input[name=blowerCntlModeRadBtn]:checked").val().toString() + "\n";
+
+  return theGoodStuff;
+}
+
+stoveController.init();
+
+(function initUI() {
 
   console.log("initUI");
 
@@ -172,11 +213,13 @@ function initUI() {
     stoveController.emit('homeMotorBtnClicked');
   });
 
-  // Initialize the values of the text inputs
+  // Initialize the values of the UI elements
   $( "#potTempDesired" ).val(0);
   $( "#damperAngleManual" ).val(0);
   $( "#blowerSpeedManual" ).val(0);
   $( "#dataUpdateRateInput" ).val(5);
+  $( "#damperManualCntl" ).prop("checked", true);
+  $( "#blowerManualCntl" ).prop("checked", true);
 
   // Init the desired pot temperature input and slider event handlers
   $( '#potTempDesired' ).on( "change", function(event, ui) {
@@ -202,6 +245,40 @@ function initUI() {
       const value = Math.floor( $("#damperAngleManual").val() );
       console.log("damperAngleManual change event: value = " + value);
       $( "#damperAngleSlider" ).slider( "value", value);
+  });
+
+  // Damper Control Mode Radio Buttons
+  $('input[name=damperCntlModeRadBtn]').click(function() {
+      let newCntlMode = $('input[name=damperCntlModeRadBtn]:checked').val();
+      if ( newCntlMode === 'manual' ) {
+        // enable the manual damper controls
+        $( "#damperAngleSlider" ).slider( "enable" );
+        document.getElementById('damperAngleManual').disabled = false;
+        $( "#homeMotorBtn" ).button( "enable" );
+      } else {
+        // auto - disable the manual damper controls
+        $( "#damperAngleSlider" ).slider( "disable" );
+        document.getElementById('damperAngleManual').disabled = true;
+        $( "#homeMotorBtn" ).button( "disable" );
+      }
+        // send message to stove controller
+        stoveController.emit("damperCntlModeChanged", newCntlMode);
+  });
+
+  // Blower Control Mode Radio Buttons
+  $('input[name=blowerCntlModeRadBtn]').click(function() {
+      let newCntlMode = $('input[name=blowerCntlModeRadBtn]:checked').val();
+      if ( newCntlMode === 'manual' ) {
+        // enable the manual blower controls
+        $( "#blowerSpeedSlider" ).slider( "enable" );
+        document.getElementById('blowerSpeedManual').disabled = false;
+      } else {
+        // auto - disable the manual blower controls
+        $( "#blowerSpeedSlider" ).slider( "disable" );
+        document.getElementById('blowerSpeedManual').disabled = true;
+      }
+        // send message to stove controller
+        stoveController.emit("blowerCntlModeChanged", newCntlMode);
   });
 
   $( "#damperAngleSlider" ).slider({
@@ -239,4 +316,14 @@ function initUI() {
       console.log("dataUpdateRateInput change event: value = " + value);
       stoveController.emit('dataUpdateRateChanged', value);
   });
-}
+
+  // Save Data checkbox event handler
+  $( "#saveDataChkbox" ).change(function(event) {
+      // saveDataToFile = this.checked;
+      if ($('#saveDataChkbox').is(":checked")) {
+        // Add a column header to the data file everytime the checkbox is checked
+        fileSys.initDataFile();
+      }
+  });
+
+})();
