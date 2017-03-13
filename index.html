@@ -35,13 +35,13 @@
             <div id='damperCntlModeManual'>
               <label for="damperManualCntl" class='damperColumn1 indent'>Manual</label>
               <div class='radioButton damperColumn2'>
-                <input type="radio" name="damperCntlModeRadBtn" id="damperManualCntl" required value="1" /><br />
+                <input type="radio" name="damperCntlModeRadBtn" id="damperManualCntl" required value="manual" /><br />
               </div>
             </div>
             <div id='damperCntlModeAuto'>
               <label for="damperAutoCntl" class='damperColumn1 indent'>Automatic</label>
               <div class='radioButton damperColumn2'>
-                <input type="radio" name="damperCntlModeRadBtn" id="damperAutoCntl" value="2" /><br />
+                <input type="radio" name="damperCntlModeRadBtn" id="damperAutoCntl" value="auto" /><br />
               </div>
             </div>
           </div>
@@ -100,13 +100,13 @@
             <div id='blowerCntlModeManual'>
               <label for="blowerManualCntl" class='blowerColumn1 indent'>Manual</label>
               <div class='radioButton blowerColumn2'>
-                <input type="radio" name="blowerCntlModeRadBtn" id="blowerManualCntl" required value="1" /><br />
+                <input type="radio" name="blowerCntlModeRadBtn" id="blowerManualCntl" required value="manual" /><br />
               </div>
             </div>
             <div id='blowerCntlModeAuto'>
               <label for="blowerAutoCntl" class='blowerColumn1 indent'>Automatic</label>
               <div class='radioButton blowerColumn2'>
-                <input type="radio" name="blowerCntlModeRadBtn" id="blowerAutoCntl" value="2" /><br />
+                <input type="radio" name="blowerCntlModeRadBtn" id="blowerAutoCntl" value="auto" /><br />
               </div>
             </div>
           </div>
@@ -143,6 +143,10 @@
       </div>
       <div id='controllerIsConnected'>
         <p class='globalUIColumn1 indent'>The stove controller is NOT connected.</p>
+      </div>
+      <div id='saveDataToFile'>
+        <p class='globalUIColumn1 indent'>Save Data To File</p>
+        <input type='checkbox' id='saveDataChkbox' class='globalUIColumn2 checkbox'>
       </div>
     </section>
     <script src='renderer.js'></script>

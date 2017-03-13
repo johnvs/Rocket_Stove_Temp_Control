@@ -73,6 +73,10 @@ p, label {
 .numberInput {
    width : 50px;
 }
+.checkbox {
+   width  : 25px;
+   height : 25px;
+}
 #homeMotorBtn {
   width     : 75px;
   height    : 25px;
