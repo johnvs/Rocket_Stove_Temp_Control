@@ -46,7 +46,7 @@ const dataFile = path.join(__dirname, 'stoveData.csv');
     "63.95,90.0,45.5,1,1200.0,75.0,875.0,0"
 
 */
-const columnHdrs = '"Pot Temp Actual","Pot Temp Desired","Damper Angle","Damper control mode",' +
+const columnHdrs = '"Time","Pot Temp Actual","Pot Temp Desired","Damper Angle","Damper control mode",' +
                    '"Flue Temp","Blower Speed Desired","Blower speed Actual","Blower control mode"\n';
 
 function write(dataStr) {
@@ -66,4 +66,4 @@ function initFile() {
 }
 
 exports.writeData = write;
-exports.init = initFile;
+exports.initDataFile = initFile;
