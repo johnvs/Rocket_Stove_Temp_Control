@@ -18,8 +18,8 @@
   "author": "john van strien",
   "license": "",
   "devDependencies": {
-    "electron": "^1.4.1",
-    "electron-rebuild": "^1.4.0"
+    "electron": "1.4.1",
+    "electron-rebuild": "1.4.0"
   },
   "dependencies": {
     "jquery": "^3.1.1",
