@@ -1,7 +1,5 @@
 "use strict";
 
-const fs = require('fs');
-const url = require("url");
 const SerialPort = require('serialport');
 
 let serialPort;
@@ -54,12 +52,30 @@ const emitters = {
         }
     	},
 
+  "damperCntlModeChanged" : function(data) {
+        if (serialPort) {
+          console.log('Damper Control Mode new value = ' + data);
+      		serialPort.write('a ' + data + '\r');
+        // } else {
+        //   console.log('Tried to change desired pot temp while not connected to stove controller');
+        }
+    	},
+
   "damperAngleChanged" : function(data) {
         if (serialPort) {
           console.log('Damper angle new value = ' + data);
       		serialPort.write('n ' + data + '\r');
         // } else {
         //   console.log('Tried to change damper angle while not connected to stove controller');
+        }
+    	},
+
+  "blowerCntlModeChanged" : function(data) {
+        if (serialPort) {
+          console.log('Blower Control Mode new value = ' + data);
+      		serialPort.write('b ' + data + '\r');
+        // } else {
+        //   console.log('Tried to change desired pot temp while not connected to stove controller');
         }
     	},
 
@@ -150,7 +166,7 @@ function defineSerialPortEventHandlers() {
   serialPort.on("open", function () {
     console.log('Serial Port is Open');
 
-    // Processes incoming serial data
+    // Processes incoming serial data received as string
     serialPort.on('data', function(data) {
 
       let dataObj;
@@ -161,9 +177,6 @@ function defineSerialPortEventHandlers() {
         dataObj = JSON.parse(data);
         console.log("New serial data:");
         console.log(dataObj);
-
-        // Write data to file
-
 
         // Send the client that new serial data
         callbacks.update(dataObj);
