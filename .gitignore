@@ -1,4 +1,4 @@
-stoveData.csv
+*.csv
 
 # Created by https://www.gitignore.io/api/osx,node
 
@@ -70,7 +70,9 @@ typings/
 
 # Icon must end with two \r
 Icon
-
+*.icns
+*.ico
+*.png
 
 # Thumbnails
 ._*
