@@ -5,7 +5,26 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "install": "electron-rebuild"
+    "rebuild": "electron-rebuild",
+    "pack": "build --dir",
+    "pack-mac": "build --mac",
+    "pack-win": "build --win",
+  },
+  "build": {
+    "appId": "com.jvsdesign.rocketstovetempcontrol",
+    "npmRebuild": true,
+    "directories": {
+      "output": "./packages"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.icns",
+      "target": "dmg"
+    }
   },
   "repository": {
     "type": "git",
@@ -18,8 +37,9 @@
   "author": "john van strien",
   "license": "",
   "devDependencies": {
-    "electron": "1.4.1",
-    "electron-rebuild": "1.4.0"
+    "electron": "1.6.2",
+    "electron-builder": "16.4.2",
+    "electron-rebuild": "1.5.7"
   },
   "dependencies": {
     "jquery": "^3.1.1",
