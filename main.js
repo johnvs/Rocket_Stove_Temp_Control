@@ -16,7 +16,12 @@ let mainWindow;
 function createWindow () {
   console.log("createWindow");
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 1200, height: 1000});
+  mainWindow = new BrowserWindow({
+      width: 1200,
+      height: 1000,
+      title: 'Rocket Stove Temperature Control'
+//      , icon: __dirname + 'rocket-stove.png'  // moved to package.json:build
+    });
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
@@ -25,7 +30,6 @@ function createWindow () {
     slashes: true
   }));
 
-  // Open the DevTools.
   mainWindow.webContents.openDevTools();
 
   mainWindow.on('ready-to-show', function () {
