@@ -8,7 +8,7 @@
     "rebuild": "electron-rebuild",
     "pack": "build --dir",
     "pack-mac": "build --mac",
-    "pack-win": "build --win",
+    "pack-win": "build --win"
   },
   "build": {
     "appId": "com.jvsdesign.rocketstovetempcontrol",
