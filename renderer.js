@@ -55,7 +55,7 @@ function handleDataEvent(name, value) {
           // c  Damper Angle (-1 = motor not homed, 0 - 90 degrees)
           if (typeof data === "number") {
             if ((data >= 0) && (data < 90)) {
-              $('damperAngleActual').text(data);
+              $('#damperAngleActual').text(data);
             } else if (data === -1) {
               $('#damperAngleActual').text("---");
             }
@@ -84,6 +84,11 @@ function handleDataEvent(name, value) {
           if (typeof data === "number") {
             if ((data >= 0) && (data < 199)) {
               $('#damperMotorPos').text(data);
+
+              // Convert 0 - 200 to 0 - 360
+              // const positionDegrees = (data * 360) / 200;
+              // $('#damperAngleActual').text(positionDegrees);
+
             } else if (data === -1) {
               $('#damperMotorPos').text("Not Homed");
             }
@@ -161,8 +166,16 @@ stoveController.on('update', function (receivedData) {
 });
 
 // Process message from server
-stoveController.on('controllerConnected', function (value) {
-    const result = value ? "" : "NOT ";
+stoveController.on('controllerConnected', function (isStoveConnected) {
+
+    let result = "NOT ";
+    if (isStoveConnected) {
+      // If the stove controller is connected, init it's desired pot temp
+      const potTemp = Math.floor( $("#potTempDesired").val() );
+      stoveController.emit("potTempDesiredChanged", potTemp);
+      result = "";
+    }
+    // const result = isStoveConnected ? "" : "NOT ";
     console.log("Stove controller is " + result + "connected.");
     $('#controllerIsConnected p').text(`The stove controller is ${result} connected.`);
 });
