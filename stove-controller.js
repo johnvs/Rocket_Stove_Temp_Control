@@ -1,6 +1,7 @@
 "use strict";
 
 const SerialPort = require('serialport');
+// const controlModes = require('./control-modes');
 
 let serialPort;
 let dataRecord = {};
@@ -12,22 +13,54 @@ let callbacks = {};
 //                "controllerConnected" : ccCallback
 //             }
 
-exports.on =  function(eventName, callback) {
-                console.log("stove-controller:on " + eventName);
-                callbacks[eventName] = callback;
-              };
+const controlModes = {
+    damper : {
+      'manual' : 0,
+      'auto'   : 1
+    },
 
-exports.emit =  function(eventName, data) {
-                  console.log("stove-controller:emit " + eventName);
+    blower : {
+      'manualPot' : 0,
+      'manualUI'  : 1,
+      'auto'      : 2
+    }
+};
 
-                  if (typeof emitters[eventName] === "function") {
-                    emitters[eventName](data);
-                  } else {
-                    console.log("event " + eventName + " is not a function");
-                  }
-                };
+module.exports = {
+    on : function(eventName, callback) {
+            console.log("stove-controller:on " + eventName);
+            callbacks[eventName] = callback;
+          },
 
-exports.init = initSerialPort;
+    emit : function(eventName, data) {
+              console.log("stove-controller:emit " + eventName);
+
+              if (typeof emitters[eventName] === "function") {
+                emitters[eventName](data);
+              } else {
+                console.log("event " + eventName + " is not a function");
+              }
+           },
+
+    controllModes : controlModes,
+
+    init : initSerialPort
+};
+
+// exports.on =  function(eventName, callback) {
+//                 console.log("stove-controller:on " + eventName);
+//                 callbacks[eventName] = callback;
+//               };
+
+// exports.emit =  function(eventName, data) {
+//                   console.log("stove-controller:emit " + eventName);
+//
+//                   if (typeof emitters[eventName] === "function") {
+//                     emitters[eventName](data);
+//                   } else {
+//                     console.log("event " + eventName + " is not a function");
+//                   }
+//                 };
 
 const emitters = {
 
@@ -54,8 +87,12 @@ const emitters = {
 
   "damperCntlModeChanged" : function(data) {
         if (serialPort) {
-          console.log('Damper Control Mode new value = ' + data);
-      		serialPort.write('a ' + data + '\r');
+          if (controlModes.damper.hasOwnProperty(data)) {
+            console.log('Damper Control Mode new value ' + data + ' = ' + controlModes.damper[data]);
+        		serialPort.write('a ' + controlModes.damper[data] + '\r');
+          } else {
+            console.log('Bad damper control mode value ' + data);
+          }
         // } else {
         //   console.log('Tried to change desired pot temp while not connected to stove controller');
         }
@@ -72,8 +109,12 @@ const emitters = {
 
   "blowerCntlModeChanged" : function(data) {
         if (serialPort) {
-          console.log('Blower Control Mode new value = ' + data);
-      		serialPort.write('b ' + data + '\r');
+          if (controlModes.blower.hasOwnProperty(data)) {
+            console.log('Blower Control Mode new value ' + data + ' = ' + controlModes.blower[data]);
+        		serialPort.write('b ' + controlModes.blower[data] + '\r');
+          } else {
+            console.log('Bad blower control mode value ' + data);
+          }
         // } else {
         //   console.log('Tried to change desired pot temp while not connected to stove controller');
         }
@@ -116,7 +157,7 @@ function initSerialPort() {
 // Callback for SerialPort.list
 function checkPortAvailability(err, ports) {
   // portName = something like '/dev/tty.usbmodem2360871'
-  const portNamePrefix = '/dev/cu.usbmodem';
+  const portNamePrefix = (process.platform === 'darwin') ? '/dev/cu.usbmodem' : 'COM';
   if (err) {
     console.log('Error listing port: ', err.message);
   } else {
