@@ -26,7 +26,7 @@ function handleDataEvent(name, value) {
     a  Pot Temp Faults (0 = No faults, 1 = No connection, 2 = Short to ground, 3 = Short to VCC)
     b  Pot Temp, Actual (˚F)
     c  Damper Angle (-1 = motor not homed, 0 - 90 degrees)
-    d  Damper Control Mode (0 = Manual, 1 = Auto)
+    d  Damper Control Mode (0 = Manual Pot, 1 = Manual UI, 2 = Auto)
     e  Motor is Homed (0 = No, 1 = Yes)
     f  Motor position (-1 = motor not homed, 0 - 199)
     g  Flue Temp Faults (0 = No faults, 1 = No connection, 2 = Short to ground, 3 = Short to VCC)
@@ -219,7 +219,7 @@ stoveController.init();
   $( "#blowerSpeedManual" ).val(0);
   $( "#dataUpdateRateInput" ).val(5);
   $( "#damperManualCntl" ).prop("checked", true);
-  $( "#blowerManualCntl" ).prop("checked", true);
+  $( "#blowerManualPotCntl" ).prop("checked", true);
 
   // Init the desired pot temperature input and slider event handlers
   $( '#potTempDesired' ).on( "change", function(event, ui) {
@@ -250,35 +250,52 @@ stoveController.init();
   // Damper Control Mode Radio Buttons
   $('input[name=damperCntlModeRadBtn]').click(function() {
       let newCntlMode = $('input[name=damperCntlModeRadBtn]:checked').val();
-      if ( newCntlMode === 'manual' ) {
+      if ( newCntlMode === "manual" ) {
         // enable the manual damper controls
         $( "#damperAngleSlider" ).slider( "enable" );
         document.getElementById('damperAngleManual').disabled = false;
         $( "#homeMotorBtn" ).button( "enable" );
-      } else {
+
+        // send message to stove controller
+        stoveController.emit("damperCntlModeChanged", newCntlMode);
+
+      } else if ( newCntlMode === "auto" ) {
         // auto - disable the manual damper controls
         $( "#damperAngleSlider" ).slider( "disable" );
         document.getElementById('damperAngleManual').disabled = true;
         $( "#homeMotorBtn" ).button( "disable" );
-      }
+
         // send message to stove controller
         stoveController.emit("damperCntlModeChanged", newCntlMode);
+
+      } else {
+        console.log('Bad damperCntlMode value ' + newCntlMode);
+      }
   });
 
   // Blower Control Mode Radio Buttons
   $('input[name=blowerCntlModeRadBtn]').click(function() {
       let newCntlMode = $('input[name=blowerCntlModeRadBtn]:checked').val();
-      if ( newCntlMode === 'manual' ) {
+      if ( newCntlMode === 'manualUI' ) {
         // enable the manual blower controls
         $( "#blowerSpeedSlider" ).slider( "enable" );
         document.getElementById('blowerSpeedManual').disabled = false;
-      } else {
-        // auto - disable the manual blower controls
-        $( "#blowerSpeedSlider" ).slider( "disable" );
-        document.getElementById('blowerSpeedManual').disabled = true;
-      }
+
         // send message to stove controller
         stoveController.emit("blowerCntlModeChanged", newCntlMode);
+
+      } else if ( (newCntlMode === 'manualPot' ) ||
+                  (newCntlMode === 'auto' ) ) {
+        // auto or manual Potentiometer - disable the UI manual blower controls
+        $( "#blowerSpeedSlider" ).slider( "disable" );
+        document.getElementById('blowerSpeedManual').disabled = true;
+
+        // send message to stove controller
+        stoveController.emit("blowerCntlModeChanged", newCntlMode);
+
+      } else {
+        console.log('Bad blowerCntlMode value.');
+      }
   });
 
   $( "#damperAngleSlider" ).slider({
