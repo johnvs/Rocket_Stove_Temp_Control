@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="main.css" type="text/css">
     <!-- <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
 	  <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script> -->
+    <!-- <script>
+      const stoveController = require('./stove-controller.js');
+    </script> -->
   </head>
   <body>
     <main id='mainUI'>
@@ -30,7 +33,7 @@
         </div>
 
         <div id='damperControlMode'>
-          <h3 class='damperColumn1'>Control Mode</h3>
+          <h3 class='groupTitle'>Control Mode</h3>
           <div id='damperCntlModeRadBtns'>
             <div id='damperCntlModeManual'>
               <label for="damperManualCntl" class='damperColumn1 indent'>Manual</label>
@@ -48,7 +51,7 @@
         </div>
 
         <div id='damperManualCntl'>
-          <h3 class='damperColumn1'>Manual Control</h3>
+          <h3 class='groupTitle'>Manual Control</h3>
           <div id='damperSetAngle'>
             <p class='damperColumn1 indent'>Set Angle (Degrees)</p>
             <input type='number' id='damperAngleManual' class='damperColumn2 numberInput'>
@@ -61,7 +64,7 @@
         </div>
 
         <div id='damperStatus'>
-          <h3 class='damperColumn1'>Status</h3>
+          <h3 class='groupTitle'>Status</h3>
           <div id='motorHomed'>
             <p class='damperColumn1 indent'>Motor is Homed</p>
             <p id='damperMotorIsHomed' class='damperColumn2'>No</p>
@@ -95,25 +98,31 @@
         </div>
 
         <div id='blowerControlMode'>
-          <h3 class='blowerColumn1'>Control Mode</h3>
+          <h3 class='groupTitle'>Control Mode</h3>
           <div id='blowerCntlModeRadBtns'>
-            <div id='blowerCntlModeManual'>
-              <label for="blowerManualCntl" class='blowerColumn1 indent'>Manual</label>
+            <div id='blowerCntlModeManualPot'>
+              <label for="blowerManualPotCntl" class='blowerColumn1 indent'>Manual - Potentiometer</label>
               <div class='radioButton blowerColumn2'>
-                <input type="radio" name="blowerCntlModeRadBtn" id="blowerManualCntl" required value="manual" /><br />
+                <input type="radio" name="blowerCntlModeRadBtn" id="blowerManualPotCntl" value="manualPot"/>
+              </div>
+            </div>
+            <div id='blowerCntlModeManualUI'>
+              <label for="blowerManualUICntl" class='blowerColumn1 indent'>Manual - UI</label>
+              <div class='radioButton blowerColumn2'>
+                <input type="radio" name="blowerCntlModeRadBtn" id="blowerManualUICntl" value="manualUI"/>
               </div>
             </div>
             <div id='blowerCntlModeAuto'>
               <label for="blowerAutoCntl" class='blowerColumn1 indent'>Automatic</label>
               <div class='radioButton blowerColumn2'>
-                <input type="radio" name="blowerCntlModeRadBtn" id="blowerAutoCntl" value="auto" /><br />
+                <input type="radio" name="blowerCntlModeRadBtn" id="blowerAutoCntl" value="auto"/>
               </div>
             </div>
           </div>
         </div>
 
         <div id='blowerManualCntl'>
-          <h3 class='blowerColumn1'>Manual Control</h3>
+          <h3 class='groupTitle'>Manual Control</h3>
           <div id='blowerSetSpeed'>
             <p class='blowerColumn1 indent'>Set Speed (%)</p>
             <input type='number' id='blowerSpeedManual' class='blowerColumn2 numberInput'>
@@ -122,7 +131,7 @@
         </div>
 
         <div id='blowerStatus'>
-          <h3 class='blowerColumn1'>Status</h3>
+          <h3 class='groupTitle'>Status</h3>
           <div id='algoCmdSpeed'>
             <p class='blowerColumn1 indent'>Control System Command Speed</p>
             <p id='blowerCommandSpeed' class='blowerColumn2'>speed</p>
@@ -136,17 +145,41 @@
       </section>
     </main>
     <section id='globalUI'>
-      <h3 class='globalUIColumn1'>Global Controls</h3>
-      <div id='dataUpdateRate'>
-        <p class='globalUIColumn1 indent'>Set Data Update Rate (sec)</p>
-        <input type='number' id='dataUpdateRateInput' class='globalUIColumn2 numberInput'>
+      <div class='bottomPanel'>
+        <h3 class='globalUITitle'>Global Controls</h3>
+        <div id='globalUIBody'>
+            <div id='dataUpdateRate'>
+              <p class='globalUIColumn1 indent'>Set Data Update Rate (sec)</p>
+              <input type='number' id='dataUpdateRateInput' class='globalUIColumn2 numberInput'>
+            </div>
+            <div id='controllerIsConnected'>
+              <p class='globalUIColumn1 indent'>The stove controller is NOT connected.</p>
+            </div>
+            <div id='saveDataToFile'>
+              <p class='globalUIColumn1 indent'>Save Data To File</p>
+              <input type='checkbox' id='saveDataChkbox' class='globalUIColumn2 checkbox'>
+            </div>
+        </div>
       </div>
-      <div id='controllerIsConnected'>
-        <p class='globalUIColumn1 indent'>The stove controller is NOT connected.</p>
+      <div class='bottomPanel'>
+        <h3 class='globalUITitle'>Recent Damper Changes</h3>
+        <div class='recentChanges'>
+          <p>Damper Position Changed to 90 degrees @ 12:35:23</p>
+          <p>Damper Position Changed to 90 degrees @ 12:45:23</p>
+          <p>Damper Position Changed to 90 degrees @ 12:55:23</p>
+          <p>Damper Position Changed to 90 degrees @ 1:05:23</p>
+          <p>Damper Position Changed to 90 degrees @ 1:15:23</p>
+        </div>
       </div>
-      <div id='saveDataToFile'>
-        <p class='globalUIColumn1 indent'>Save Data To File</p>
-        <input type='checkbox' id='saveDataChkbox' class='globalUIColumn2 checkbox'>
+      <div class='bottomPanel'>
+        <h3 class='globalUITitle'>Recent Blower Changes</h3>
+        <div class='recentChanges'>
+          <p>Blower Speed Changed to 85% @ 12:35:23</p>
+          <p>Blower Speed Changed to 85% @ 12:40:23</p>
+          <p>Blower Speed Changed to 85% @ 12:45:23</p>
+          <p>Blower Speed Changed to 85% @ 12:50:23</p>
+          <p>Blower Speed Changed to 85% @ 12:55:23</p>
+        </div>
       </div>
     </section>
     <script src='renderer.js'></script>
