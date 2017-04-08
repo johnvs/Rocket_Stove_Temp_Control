@@ -6,6 +6,7 @@ const SerialPort = require('serialport');
 let serialPort;
 let dataRecord = {};
 let isStoveConnected = false;
+
 let callbacks = {};
 // Looks like:
 // callbacks = {
@@ -47,20 +48,13 @@ module.exports = {
     init : initSerialPort
 };
 
-// exports.on =  function(eventName, callback) {
-//                 console.log("stove-controller:on " + eventName);
-//                 callbacks[eventName] = callback;
-//               };
-
-// exports.emit =  function(eventName, data) {
-//                   console.log("stove-controller:emit " + eventName);
-//
-//                   if (typeof emitters[eventName] === "function") {
-//                     emitters[eventName](data);
-//                   } else {
-//                     console.log("event " + eventName + " is not a function");
-//                   }
-//                 };
+  a : function(data) {
+        // a  Pot thermocouple faults
+        if ((typeof data === "number") && (data >= 0) && (data < 4)) {
+          // $('#potTCFaults').text(tcFaults[data]);
+          callbacks.update('potTCFaults', tcFaults[data]);
+        }
+      },
 
 const emitters = {
 
