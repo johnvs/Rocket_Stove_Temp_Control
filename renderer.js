@@ -12,6 +12,54 @@ const fileSys = require('./file-sys');
 
 //let saveDataToFile = false;
 
+let stoveJustConnected = false;
+let prevDamperAngle = 0;
+let recentChangesDamper = [];
+const RECENT_CHANGES_MSG_COUNT_MAX = 5;
+
+function timeNow() {
+  const d = new Date();
+  let hr = d.getHours();
+  let min = d.getMinutes();
+  let sec = d.getSeconds();
+  hr = (hr < 10 ? '0' : '') + hr;
+  min = (min < 10 ? '0' : '') + min;
+  sec = (sec < 10 ? '0' : '') + sec;
+  return hr + ':' + min + ':' + sec;
+}
+
+function displayRecentChangeDamper(data) {
+  const currentTime = timeNow();
+
+  // Create a new message of this form:
+  //   Damper Position Changed to 90 degrees @ 12:35:23
+  //   Blower Speed Changed to 85% @ 12:35:23
+  const newMesssage = `Damper Position Changed to ${data} degrees @ ${currentTime}`;
+
+  if (recentChangesDamper.length < RECENT_CHANGES_MSG_COUNT_MAX) {
+    // Add the new message to the bottom of the list in the div
+    $(`#recentChangesDamper p:nth-child(${recentChangesDamper.length + 1})`).text(newMesssage);
+
+    // Add the new message to the buffer
+    recentChangesDamper.push(newMesssage);
+  } else {
+    // Add the new message to the bottom of the list and scroll the older ones up
+    for (let i = 0; i < recentChangesDamper.length - 1; i++) {
+      recentChangesDamper[i] = recentChangesDamper[i+1];
+    }
+    recentChangesDamper[4] = newMesssage;
+
+    recentChangesDamper.forEach(function(elem, i) {
+      $(`#recentChangesDamper p:nth-child( ${ i+1 } )`).text(elem);
+    });
+  }
+}
+
+// New stove controller event listener structure
+// stoveController.on('potTCFaults', function (tcFault) {
+//   $('#potTCFaults').text(tcFault);
+// });
+
 function handleDataEvent(name, value) {
 
   const tcFaults = {
@@ -27,16 +75,17 @@ function handleDataEvent(name, value) {
     b  Pot Temp, Actual (˚F)
     c  Damper Angle (-1 = motor not homed, 0 - 90 degrees)
     d  Damper Control Mode (0 = Manual Pot, 1 = Manual UI, 2 = Auto)
-    e  Motor is Homed (0 = No, 1 = Yes)
-    f  Motor position (-1 = motor not homed, 0 - 199)
+    e  Damper motor is Homed (0 = No, 1 = Yes)
+    f  Damper motor position (-1 = motor not homed, 0 - 199)
     g  Flue Temp Faults (0 = No faults, 1 = No connection, 2 = Short to ground, 3 = Short to VCC)
     h  Flue Temp (˚F)
-    i  Fan speed, Actual (RPM)
-    j  Blower Control Mode (0 = Manual, 1 = Auto)
+    i  Blower speed, Actual (RPM)
+    j  Blower Control Mode (0 = ManualPot, 1 = ManualUI, 2 = Auto)
     k  Blower Algorithm Command Speed (-1 = N/A, 0 - 100%)
+    l  Blower UI speed, Set (%)
 
     example data packet:
-     '{a:<data>, b:<data>, c:<data>, d:<data>, e:<data>, f:<data>, g:<data>, h:<data>, i:<data>, j:<data>, k:<data>}'
+     '{a:<data>, b:<data>, c:<data>, d:<data>, e:<data>, f:<data>, g:<data>, h:<data>, i:<data>, j:<data>, k:<data>, l:<data>}'
   */
   const dataEventHandlers = {
     a : function(data) {
@@ -54,19 +103,26 @@ function handleDataEvent(name, value) {
     c : function(data) {
           // c  Damper Angle (-1 = motor not homed, 0 - 90 degrees)
           if (typeof data === "number") {
-            if ((data >= 0) && (data < 90)) {
+            if ((data >= 0) && (data <= 90)) {
               $('#damperAngleActual').text(data);
+
+              if (prevDamperAngle !== data) {
+                prevDamperAngle = data;
+                // Write new data to UI recent changes pane
+                displayRecentChangeDamper(data);
+              }
+
             } else if (data === -1) {
-              $('#damperAngleActual').text("---");
+              $('#damperAngleActual').text("--");
             }
           }
         },
     d : function(data) {
           // d  Damper Control Mode (0 = Manual, 1 = Auto)
           if (data === 0) {
-            // $( "#damperManualCntl" ).prop("checked", true);
+            $( "#damperManualCntl" ).prop("checked", true);
           } else if (data === 1) {
-            // $( "#damperAutoCntl" ).prop("checked", true);
+            $( "#damperAutoCntl" ).prop("checked", true);
           }
         },
     e : function(data) {
@@ -119,9 +175,11 @@ function handleDataEvent(name, value) {
     j : function(data) {
           // j  Blower Control Mode (0 = Manual, 1 = Auto)
           if (data === 0) {
-            // $( "#blowerManualCntl" ).prop( "checked", true);
+            $( "#blowerManualPotCntl" ).prop( "checked", true);
           } else if (data === 1) {
-            // $( "#blowerAutoCntl" ).prop( "checked", true);
+            $( "#blowerManualUICntl" ).prop( "checked", true);
+          } else if (data === 2) {
+            $( "#blowerAutoCntl" ).prop( "checked", true);
           }
         },
     k : function(data) {
@@ -131,6 +189,19 @@ function handleDataEvent(name, value) {
               $('#blowerCommandSpeed').text(data);
             } else if (data === -1) {
               $('#blowerCommandSpeed').text("---");
+            }
+          }
+        },
+    l : function(data) {
+          // l  Blower UI speed, Set (%)
+          if (typeof data === "number") {
+            if ((data >= 0) && (data <= 100)) {
+              // $( "#blowerSpeedManual" ).val(data);
+              if (stoveJustConnected) {
+                $( "#blowerSpeedSlider" ).slider( "value", data);
+              }
+            } else if (data === -1) {
+//              $( "#blowerSpeedManual" ).val("--");
             }
           }
         }
@@ -165,7 +236,7 @@ stoveController.on('update', function (receivedData) {
   }
 });
 
-// Process message from server
+// Process message from stove controller
 stoveController.on('controllerConnected', function (isStoveConnected) {
 
     let result = "NOT ";
@@ -174,6 +245,7 @@ stoveController.on('controllerConnected', function (isStoveConnected) {
       const potTemp = Math.floor( $("#potTempDesired").val() );
       stoveController.emit("potTempDesiredChanged", potTemp);
       result = "";
+      stoveJustConnected = true;
     }
     // const result = isStoveConnected ? "" : "NOT ";
     console.log("Stove controller is " + result + "connected.");
@@ -335,7 +407,15 @@ stoveController.init();
     value : 0,
     change: function(event, ui) {
       console.log("blowerSpeedSlider change event: value = " + ui.value);
-      stoveController.emit('blowerSpeedChanged', ui.value);
+
+      // The first time through after the stove controller connects we set the slider
+      // value from the controller data, so don't just echo that back to the controller
+      if (stoveJustConnected) {
+        stoveJustConnected = false;
+      } else {
+        stoveController.emit('blowerSpeedChanged', ui.value);
+      }
+
       $( "#blowerSpeedManual" ).val(ui.value);
     }
   });
