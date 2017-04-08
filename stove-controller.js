@@ -1,7 +1,6 @@
 "use strict";
 
-const SerialPort = require('serialport');
-// const controlModes = require('./control-modes');
+const SerialPort = require('stoveSerialport');
 
 let serialPort;
 let dataRecord = {};
@@ -133,96 +132,8 @@ const emitters = {
     	}
 };
 
-const serialPortConfig = {
-  // defaults for Arduino serial communication
-  baudrate    : 9600,
-  dataBits    : 8,
-  parity      : 'none',
-  stopBits    : 1,
-  flowControl : false
-};
-
 function initSerialPort() {
   console.log('Initializing serial ports.');
 
   SerialPort.list(checkPortAvailability);
-}
-
-// Callback for SerialPort.list
-function checkPortAvailability(err, ports) {
-  // portName = something like '/dev/tty.usbmodem2360871'
-  const portNamePrefix = (process.platform === 'darwin') ? '/dev/cu.usbmodem' : 'COM';
-  if (err) {
-    console.log('Error listing port: ', err.message);
-  } else {
-    console.log('Available serial ports:');
-    ports.forEach(function(port) {
-      console.log('  Com name: ' + port.comName);
-      console.log('    Device manufacturer: ' + port.manufacturer);
-      if ((port.comName).startsWith(portNamePrefix)) {
-        // We found a potential serial port
-        console.log('Got a port address: ' + port.comName);
-        serialPort = new SerialPort(port.comName, serialPortConfig, portOpenCallback);
-        defineSerialPortEventHandlers();
-      }
-    });
-    if (!serialPort) {
-      console.log("Failed to find an open a serial port.");
-
-      // Let client know that it is NOT connected to a stove controller.
-      callbacks.controllerConnected(false);
-    }
-  }
-}
-
-// Callback for 'new SerialPort()'
-function portOpenCallback(err) {
-  if (err) {
-    console.log('Serial Port Open Error: ', err.message);
-  } else {
-    // TODO - verify that the Teensy is communicating
-    // serialPort.write('h', function(err) {
-    //   if (err) {
-    //     console.log('Error on serial port write: ', err.message);
-    //   } else {
-    //     console.log('Serial port open, initial message written');
-    //   }
-    // });
-
-    // After confirming that the connected serial device is a stove controller,
-    // let client know that it is connected.
-    callbacks.controllerConnected(true);
-    isStoveConnected = true;
-  }
-}
-
-function defineSerialPortEventHandlers() {
-
-  serialPort.on("open", function () {
-    console.log('Serial Port is Open');
-
-    // Processes incoming serial data received as string
-    serialPort.on('data', function(data) {
-
-      let dataObj;
-      try {
-        // console.log("serial data = " + data);
-        // console.log("typeof data = " + typeof data);
-
-        dataObj = JSON.parse(data);
-        console.log("New serial data:");
-        console.log(dataObj);
-
-        // Send the client that new serial data
-        callbacks.update(dataObj);
-        // for (let cb in callbacks) {
-        //   console.log("callback " + cb + " is " + callbacks[cb]);
-        // }
-      }
-      catch (err) {
-        // console.log('Serial port error = ' + err);
-        console.log('Non-JSON serial data received: \n' + data);
-      }
-    });
-  });
 }
