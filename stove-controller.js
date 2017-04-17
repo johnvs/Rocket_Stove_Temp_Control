@@ -10,33 +10,21 @@ let isFirstDataRcvd = true;
 
 const controlModes = {
     damper : {
-      // 'manual' : 0,
-      // 'auto'   : 1
-      // MANUAL : 0,
-      // AUTO   : 1,
-      // manual : 'manual',
-      // auto : 'auto'
-      manual : [ 'manual', 0 ],
-      auto   : [ 'auto',   1 ]
+      'manual' : 0,
+      'auto'   : 1
     },
 
     blower : {
-      // 'manualPot' : 0,
-      // 'manualUI'  : 1,
-      // 'auto'      : 2
-      MANUAL_POT : 0,
-      MANUAL_UI  : 1,
-      AUTO       : 2,
-      manualPot : 'manualPot',
-      manualUI : 'manualUI',
-      auto : 'auto'
+      'manualPot' : 0,
+      'manualUI'  : 1,
+      'auto'      : 2
     }
 };
 
 module.exports = {
 
   addUIOnChangeHandlers : function(handlers) {
-        console.log("stove-controller:addUIOnChangeHandlers ");
+        // console.log("stove-controller:addUIOnChangeHandlers ");
         uiOnChangeHandlers = handlers;
       },
 
@@ -71,24 +59,13 @@ const onChangeHandlers = {
       let result = "NOT ";
       if (isConnected) {
         // We are connected to the Teensy
-        // serialPort.on('update', update);
-        // serialPort.addUpdateListener(updateListener);
-        // If the stove controller is connected, init it's desired pot temp
-
-        // const potTemp = Math.floor( $("#potTempDesired").val() ); OLD
-        // const potTemp = Math.floor( ui.getPotTempDesired() );
-
-        // stoveController.emit("potTempDesiredChanged", potTemp); OLD
-        // events.potTempDesiredChanged(potTemp);
         result = "";
-        // stoveJustConnected = true;
       } else {
         // We are NOT connected to the Teensy
       }
       // const result = isStoveConnected ? "" : "NOT ";
       console.log("Stove controller is " + result + "connected.");
 
-      // $('#controllerIsConnected p').text(`The stove controller is ${result} connected.`);
       uiOnChangeHandlers.controllerStatus(`The stove controller is ${result} connected.`);
     },
 
@@ -141,16 +118,6 @@ function generateDataRecord(data) {
 
   const currentTime = new Date();
 
-  // const theGoodStuff = currentTime.toString() + "," +
-  //                      data.b.toString() + "," +
-  //                      $( "#potTempDesired" ).val().toString() + "," +
-  //                      data.c.toString() + "," +
-  //                      $("input[name=damperCntlModeRadBtn]:checked").val().toString() + "," +
-  //                      data.h.toString() + "," +
-  //                      $( "#blowerSpeedManual" ).val().toString() + "," +
-  //                      data.i.toString() + "," +
-  //                      $("input[name=blowerCntlModeRadBtn]:checked").val().toString() + "\n";
-
   const theGoodStuff = currentTime.toString() + "," +
                        data.b.toString() + "," +
                        ui.getPotTempDesired().toString() + "," +
@@ -187,11 +154,13 @@ const events = {
     	},
 
   "potTempDesiredChanged" : function(temp) {
-        if (serialPort) {
-          console.log('Desired pot temp new value = ' + temp);
-      		serialPort.sendStr('m ' + temp + msgTerminator);
-        // } else {
-        //   console.log('Tried to change desired pot temp while not connected to stove controller');
+        if (!isFirstDataRcvd) {
+          if (serialPort) {
+            console.log('Desired pot temp new value = ' + temp);
+        		serialPort.sendStr('m ' + temp + msgTerminator);
+          // } else {
+          //   console.log('Tried to change desired pot temp while not connected to stove controller');
+          }
         }
     	},
 
@@ -200,7 +169,7 @@ const events = {
           if (controlModes.damper.hasOwnProperty(cntlMode)) {
             console.log('Damper Control Mode new value ' + cntlMode + ' = ' + controlModes.damper[cntlMode]);
         		// serialPort.sendStr('a ' + controlModes.damper[cntlMode] + msgTerminator);
-        		serialPort.sendStr('a ' + controlModes.damper[cntlMode][1] + msgTerminator);
+        		serialPort.sendStr('a ' + controlModes.damper[cntlMode] + msgTerminator);
           } else {
             console.log('Bad damper control mode value ' + cntlMode);
           }
@@ -218,13 +187,13 @@ const events = {
         }
     	},
 
-  "blowerCntlModeChanged" : function(data) {
+  "blowerCntlModeChanged" : function(cntlMode) {
         if (serialPort) {
-          if (controlModes.blower.hasOwnProperty(data)) {
-            console.log('Blower Control Mode new value ' + data + ' = ' + controlModes.blower[data]);
-        		serialPort.sendStr('b ' + controlModes.blower[data] + msgTerminator);
+          if (controlModes.blower.hasOwnProperty(cntlMode)) {
+            console.log('Blower Control Mode new value ' + cntlMode + ' = ' + controlModes.blower[cntlMode]);
+        		serialPort.sendStr('b ' + controlModes.blower[cntlMode] + msgTerminator);
           } else {
-            console.log('Bad blower control mode value ' + data);
+            console.log('Bad blower control mode value ' + cntlMode);
           }
         // } else {
         //   console.log('Tried to change desired pot temp while not connected to stove controller');
@@ -235,9 +204,6 @@ const events = {
         // The first time through after the stove controller connects we set the slider
         // value from the controller data, so don't just echo that back to the controller
         if (!isFirstDataRcvd) {
-        // if (stoveJustConnected) {
-        //   stoveJustConnected = false;
-        // } else {
           if (serialPort) {
             console.log('Blower speed new value = ' + data);
         		serialPort.sendStr('f ' + data + msgTerminator);
@@ -259,15 +225,16 @@ const events = {
 
 let prevDamperAngle;
 
-// function getKeyFromValue(obj, val) {
-//   let result;
-//   for (var key in obj) {
-//       if (obj[key] === val) {
-//         result = key;
-//       }
-//   }
-//   return result;
-// }
+function getKeyFromValue(obj, val) {
+  let result;
+  for (var key in obj) {
+    if (obj[key] === val) {
+      result = key;
+      break;
+    }
+  }
+  return result;
+}
 
 function processRcvdData(name, value) {
 
@@ -350,14 +317,13 @@ function processRcvdData(name, value) {
             }
           }
         },
-    d : function(cntlMode) {
+    d : function(cntlModeInt) {
           // d  Damper Control Mode (0 = Manual, 1 = Auto)
           if (isFirstDataRcvd) {
-            // TODO - restructure this
-            if (cntlMode === controlModes.damper.manual[1]) {
-              uiOnChangeHandlers.damperCntlMode(controlModes.damper.manual[0]);
-            } else if (cntlMode === controlModes.damper.auto[1]) {
-              uiOnChangeHandlers.damperCntlMode(controlModes.damper.auto[0]);
+            const cntlMode = getKeyFromValue(controlModes.damper, cntlModeInt);
+            if (cntlMode) {
+              // if cntlMode is other than undefined
+              uiOnChangeHandlers.damperCntlMode(cntlMode);
             }
           }
         },
@@ -403,15 +369,13 @@ function processRcvdData(name, value) {
             }
           }
         },
-    j : function(cntlMode) {
+    j : function(cntlModeInt) {
           // j  Blower Control Mode (0 = ManualPot, 1 = ManualUI, 2 = Auto)
           if (isFirstDataRcvd) {
-            if (cntlMode === controlModes.blower.MANUAL_POT) {
-              uiOnChangeHandlers.blowerCntlMode(controlModes.blower.manualPot);
-            } else if (cntlMode === controlModes.blower.MANUAL_UI) {
-              uiOnChangeHandlers.blowerCntlMode(controlModes.blower.manualUI);
-            } else if (cntlMode === controlModes.blower.AUTO) {
-              uiOnChangeHandlers.blowerCntlMode(controlModes.blower.auto);
+            const cntlMode = getKeyFromValue(controlModes.blower, cntlModeInt);
+            if (cntlMode) {
+              // if cntlMode is other than undefined
+              uiOnChangeHandlers.blowerCntlMode(cntlMode);
             }
           }
         },
