@@ -16,9 +16,10 @@ let mainWindow;
 function createWindow () {
   console.log("createWindow");
   // Create the browser window.
+  const {width, height} = electron.screen.getPrimaryDisplay().size;
   mainWindow = new BrowserWindow({
-      width: 1200,
-      height: 1000,
+      width: width,
+      height: height,
       title: 'Rocket Stove Temperature Control'
 //      , icon: __dirname + 'rocket-stove.png'  // moved to package.json:build
     });
