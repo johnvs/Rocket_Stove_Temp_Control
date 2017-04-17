@@ -87,7 +87,8 @@ const onChangeHandlers = {
     },
 
   'potTempDesired' : function(temp) {
-      $('#potTempDesired').val(temp);
+      $( "#potTempSlider" ).slider( "value", temp);
+      // $('#potTempDesired').val(temp);
     },
 
   'damperAngleActual' : function(angle) {
@@ -105,8 +106,10 @@ const onChangeHandlers = {
   'damperCntlMode' : function(btn) {
       if (btn === 'manual') {
         $( "#damperManualCntl" ).prop("checked", true);
+        damperManualControls.enable();
       } else if (btn === 'auto') {
         $( "#damperAutoCntl" ).prop("checked", true);
+        damperManualControls.disable();
       }
     },
 
@@ -131,12 +134,22 @@ const onChangeHandlers = {
     },
 
   'blowerCntlMode' : function(btn) {
-      if (btn === 'manualPot') {
-        $( "#blowerManualPotCntl" ).prop("checked", true);
-      } else if (btn === 'manualUI') {
-        $( "#blowerManualUICntl" ).prop("checked", true);
-      } else if (btn === 'auto') {
-        $( "#blowerAutoCntl" ).prop("checked", true);
+      switch (btn) {
+        case stoveController.cntlModes.blower.manualPot:
+          $( "#blowerManualPotCntl" ).prop("checked", true);
+          break;
+
+        case stoveController.cntlModes.blower.manualUI:
+          $( "#blowerManualUICntl" ).prop("checked", true);
+          blowerManualControls.enable();
+          break;
+
+        case stoveController.cntlModes.blower.auto:
+          $( "#blowerAutoCntl" ).prop("checked", true);
+          break;
+
+        default:
+          break;
       }
     },
 
@@ -153,9 +166,53 @@ const onChangeHandlers = {
 stoveController.addUIOnChangeHandlers(onChangeHandlers);
 stoveController.addGettersAndSetters(gettersAndSetters);
 stoveController.init();
+initUI();
 
-(function initUI() {
+const damperManualControls = {
+  enable : function () {
+      // manual mode - enable the manual damper controls
+      $( "#damperAngleSlider" ).slider( "enable" );
+      // document.getElementById('damperAngleManual').disabled = false;
+      $( "#damperAngleManual" ).prop('disabled', false);
+      $( "#homeMotorBtn" ).button( "enable" );
+  },
+  disable : function() {
+      // auto mode - disable the manual damper controls
+      $( "#damperAngleSlider" ).slider( "disable" );
+      // document.getElementById('damperAngleManual').disabled = true;
+      $( "#damperAngleManual" ).prop('disabled', true);
+      $( "#homeMotorBtn" ).button( "disable" );
+  }
+};
 
+const blowerManualControls = {
+  enable : function () {
+      // manualUI mode - enable the manual blower controls
+      $( "#blowerSpeedSlider" ).slider( "enable" );
+      // document.getElementById('blowerSpeedManual').disabled = false;
+      $( "#blowerSpeedManual" ).prop('disabled', false);
+  },
+  disable : function () {
+      // auto or manual Potentiometer - disable the UI manual blower controls
+      $( "#blowerSpeedSlider" ).slider( "disable" );
+      // document.getElementById('blowerSpeedManual').disabled = true;
+      $( "#blowerSpeedManual" ).prop('disabled', true);
+  }
+};
+
+const onChange = {
+  damperCntlMode : [
+      damperManualControls.enable,
+      damperManualControls.disable
+  ],
+  blowerCntlMode : [
+      blowerManualControls.disable,
+      blowerManualControls.enable,
+      blowerManualControls.disable
+  ]
+};
+
+function initUI() {
   console.log("Initializing UI.");
 
   // Init Home Motor button
@@ -169,6 +226,12 @@ stoveController.init();
   $( "#damperAngleManual" ).val(0);
   $( "#blowerSpeedManual" ).val(0);
   $( "#dataUpdateRateInput" ).val(5);
+
+  // TODO - fix this, i.e. stoveController.cntlModes.blower.manualPot
+  $( "#blowerManualPotCntl" ).val('manualPot');
+  $( "#blowerManualUICntl" ).val('manualUI');
+  $( "#blowerAutoCntl" ).val('auto');
+
   $( "#damperManualCntl" ).prop("checked", true);
   $( "#blowerManualPotCntl" ).prop("checked", true);
 
@@ -201,23 +264,12 @@ stoveController.init();
   // Damper Control Mode Radio Buttons
   $('input[name=damperCntlModeRadBtn]').click(function() {
       let newCntlMode = $('input[name=damperCntlModeRadBtn]:checked').val();
-      if ( newCntlMode === stoveController.cntlModes.damper.manual[0] ) {
-        // enable the manual damper controls
-        $( "#damperAngleSlider" ).slider( "enable" );
-        document.getElementById('damperAngleManual').disabled = false;
-        $( "#homeMotorBtn" ).button( "enable" );
-
+      if ( stoveController.cntlModes.damper.hasOwnProperty(newCntlMode) ) {
         // send message to stove controller
         stoveController.on("damperCntlModeChanged", newCntlMode);
 
-      } else if ( newCntlMode === stoveController.cntlModes.damper.auto[0] ) {
-        // auto - disable the manual damper controls
-        $( "#damperAngleSlider" ).slider( "disable" );
-        document.getElementById('damperAngleManual').disabled = true;
-        $( "#homeMotorBtn" ).button( "disable" );
-
-        // send message to stove controller
-        stoveController.on("damperCntlModeChanged", newCntlMode);
+        // Enable or disable the damper manual controls based on the selected button
+        onChange.damperCntlMode[stoveController.cntlModes.damper[newCntlMode]]();
 
       } else {
         console.log('Bad damperCntlMode value ' + newCntlMode);
@@ -227,23 +279,12 @@ stoveController.init();
   // Blower Control Mode Radio Buttons
   $('input[name=blowerCntlModeRadBtn]').click(function() {
       let newCntlMode = $('input[name=blowerCntlModeRadBtn]:checked').val();
-      if ( newCntlMode === 'manualUI' ) {
-        // enable the manual blower controls
-        $( "#blowerSpeedSlider" ).slider( "enable" );
-        document.getElementById('blowerSpeedManual').disabled = false;
-
+      if ( stoveController.cntlModes.blower.hasOwnProperty(newCntlMode) ) {
         // send message to stove controller
         stoveController.on("blowerCntlModeChanged", newCntlMode);
 
-      } else if ( (newCntlMode === 'manualPot' ) ||
-                  (newCntlMode === 'auto' ) ) {
-        // auto or manual Potentiometer - disable the UI manual blower controls
-        $( "#blowerSpeedSlider" ).slider( "disable" );
-        document.getElementById('blowerSpeedManual').disabled = true;
-
-        // send message to stove controller
-        stoveController.on("blowerCntlModeChanged", newCntlMode);
-
+        // Enable or disable the blower manual controls based on the selected button
+        onChange.blowerCntlMode[stoveController.cntlModes.blower[newCntlMode]]();
       } else {
         console.log('Bad blowerCntlMode value.');
       }
@@ -278,6 +319,11 @@ stoveController.init();
     }
   });
 
+  // Init the blower manual controls as disabled
+  $( "#blowerSpeedSlider" ).slider('disable');
+  $( "#blowerSpeedManual" ).prop('disabled', true);
+//  document.getElementById('blowerSpeedManual').disabled = true;
+
   // Init the dataUpateRate input handler
   $( "#dataUpdateRateInput" ).change(function(event) {
       const value = Math.floor( $("#dataUpdateRateInput").val() );
@@ -292,4 +338,4 @@ stoveController.init();
       }
   });
 
-})();
+}
