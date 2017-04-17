@@ -17,6 +17,8 @@ module.exports = {
     onChangeHandlers = handlers;
   },
 
+  // TODO - serialport isn't valid after the controller is powered off or unplugged
+  //        So fix that.
   sendStr: function(theString) {
              if (serialPort) {
                console.log('stove-serialport:sendStr: ' + theString);
