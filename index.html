@@ -87,12 +87,12 @@
             <p class='blowerColumn1'>Flue Temperature (F)</p>
             <p id='flueTempActual' class='blowerColumn2'>temp</p>
           </div>
-          <div id='blowerSpeedDesiredGrp'>
+          <!-- <div id='blowerSpeedDesiredGrp'>
             <p class='blowerColumn1'>Desired Speed (%)</p>
             <p id='blowerSpeedDesired' class='blowerColumn2'>speed</p>
-          </div>
+          </div> -->
           <div id='blowerSpeedActualGrp'>
-            <p class='blowerColumn1'>Actual Speed (RPM)</p>
+            <p class='blowerColumn1'>Actual Speed (%)</p>
             <p id='blowerSpeedActual' class='blowerColumn2'>speed</p>
           </div>
         </div>
@@ -103,19 +103,19 @@
             <div id='blowerCntlModeManualPot'>
               <label for="blowerManualPotCntl" class='blowerColumn1 indent'>Manual - Potentiometer</label>
               <div class='radioButton blowerColumn2'>
-                <input type="radio" name="blowerCntlModeRadBtn" id="blowerManualPotCntl" value="manualPot"/>
+                <input type="radio" name="blowerCntlModeRadBtn" id="blowerManualPotCntl"/>
               </div>
             </div>
             <div id='blowerCntlModeManualUI'>
               <label for="blowerManualUICntl" class='blowerColumn1 indent'>Manual - UI</label>
               <div class='radioButton blowerColumn2'>
-                <input type="radio" name="blowerCntlModeRadBtn" id="blowerManualUICntl" value="manualUI"/>
+                <input type="radio" name="blowerCntlModeRadBtn" id="blowerManualUICntl"/>
               </div>
             </div>
             <div id='blowerCntlModeAuto'>
               <label for="blowerAutoCntl" class='blowerColumn1 indent'>Automatic</label>
               <div class='radioButton blowerColumn2'>
-                <input type="radio" name="blowerCntlModeRadBtn" id="blowerAutoCntl" value="auto"/>
+                <input type="radio" name="blowerCntlModeRadBtn" id="blowerAutoCntl"/>
               </div>
             </div>
           </div>
@@ -133,7 +133,7 @@
         <div id='blowerStatus'>
           <h3 class='groupTitle'>Status</h3>
           <div id='algoCmdSpeed'>
-            <p class='blowerColumn1 indent'>Control System Command Speed</p>
+            <p class='blowerColumn1 indent'>Automatic Control Mode Speed</p>
             <p id='blowerCommandSpeed' class='blowerColumn2'>speed</p>
           </div>
           <div id='flueTCFaultGrp'>
@@ -148,16 +148,16 @@
       <div>
         <h3 class='bottomPanelTitle'>Global Controls</h3>
         <div id='globalUIBody'>
-            <div id='dataUpdateRate'>
-              <p class='globalUIColumn1 indent'>Set Data Update Rate (sec)</p>
-              <input type='number' id='dataUpdateRateInput' class='globalUIColumn2 numberInput'>
-            </div>
             <div id='controllerIsConnected'>
               <p class='globalUIColumn1 indent'>The stove controller is NOT connected.</p>
             </div>
             <div id='saveDataToFile'>
               <p class='globalUIColumn1 indent'>Save Data To File</p>
               <input type='checkbox' id='saveDataChkbox' class='globalUIColumn2 checkbox'>
+            </div>
+            <div id='dataUpdateRate'>
+              <p class='globalUIColumn1 indent'>Set Data Update Rate (sec)</p>
+              <input type='number' id='dataUpdateRateInput' class='globalUIColumn2 numberInput'>
             </div>
         </div>
       </div>
