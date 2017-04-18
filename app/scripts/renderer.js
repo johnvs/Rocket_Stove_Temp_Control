@@ -7,7 +7,7 @@ require('jquery-ui/ui/widgets/mouse');
 require('jquery-ui/ui/widgets/slider');
 require('jquery-ui/ui/keycode');
 
-const stoveController = require('./stove-controller');
+const stoveController = require('./scripts/stove-controller');
 
 let recentChangesDamper = [];
 const RECENT_CHANGES_MSG_COUNT_MAX = 5;
