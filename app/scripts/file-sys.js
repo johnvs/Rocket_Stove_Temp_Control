@@ -3,7 +3,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const dataFile = path.join(__dirname, 'stoveData.csv');
+const dataFile = (process.platform === 'darwin') ? path.join(__dirname, 'stoveData.csv') : "C:/[RocketStoveUI/stoveData.csv";
+
+//const dataFile = path.join(__dirname, 'stoveData.csv');
 // const fields = [ 'Pot Temp Actual', 'Pot Temp Desired', 'Damper Angle Actual', 'Damper Control Mode',
 //                  'Flue Temp', 'Blower Speed Desired (%)', 'Blower Speed Actual (RPM)', 'Blower Control Mode' ];
 
